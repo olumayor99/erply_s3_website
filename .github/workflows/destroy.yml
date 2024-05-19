@@ -1,4 +1,4 @@
-name: Manual Trigger Workflow
+name: Destroy
 
 on:
   workflow_dispatch:

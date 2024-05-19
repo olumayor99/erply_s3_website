@@ -1,4 +1,4 @@
-name: Terraform on Main Push
+name: Deploy S3 Website
 
 on:
   push:
