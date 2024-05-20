@@ -89,6 +89,7 @@ git clone <REPOSITORY>
 2. Create an AWS access key in AWS IAM for Terraform with Administrator permissions (overkill, but just for this task). Download the generated CSV file, and run `aws configure` on your machine. Supply the access key and secret (copied from the CSV file) at the prompts.
 3. Create an S3 bucket and DynamoDB table to use for state locking. You should create them through the AWS Dashboard. Use only stepd 2 and 5 of [this](https://terraformguru.com/terraform-real-world-on-aws-ec2/20-Remote-State-Storage-with-AWS-S3-and-DynamoDB/) guide. make sure you create them in the same region.
 4. Open the [provider.tf](Terraform/provider.tf) file and replace the values of the `bucket` and `dynamodb_table` with the ones you just created, also making sure the `region` is correct. `key` can be any string, but make sure it has the `.tfstate` extension.
+
 ```groovy
 backend "s3" {
     bucket         = "olatest-logger-lambda"
@@ -99,6 +100,7 @@ backend "s3" {
   }
 ```
 5. Open the [variable.tf](Terraform/variable.tf) file and replace the value of `s3_bucket_name` with a unique name. Remember, S3 buckets are globally unique, just like URLs.
+
 ```groovy
 variable "s3_bucket_name" {
   type        = string
@@ -110,27 +112,36 @@ variable "s3_bucket_name" {
    - AWS_ACCESS_KEY_ID 
    - AWS_SECRET_ACCESS_KEY
 7. Commit the code and push to the repository.
+
 ```sh
 git add .
 git commit -m "Pushed my code"
 git push origin main
 ```
 8. Go to the Actions tab in your repository, you'll see the `Deploy S3 Website` workflow running. Once the jobs finish successfully, click on the `Deploy Terraform` step and go to the end of the logs to see the `s3_website_endpoint`.
+   
 ![workflow!](assets/s3_website.png)
+
 If you can't find it there, go to the s3 tab in your AWS console, and look for the bucket matching the name you specified in the [variable.tf](Terraform/variable.tf) file. Select the bucket, click on `Properties`, and scroll to the bottom of the page to find the URL of the S3 website.
+
 ![s3_bucket!](assets/s3_bucket.png)
+
 Visiting the link in a browser should show a page exactly like this.
+
 ![page!](assets/page.png)
 
 The React website should now be automatically deployed to your S3 bucket every time you push changes to the main branch.
 
 ## Pulling down the infrastructure
 1. Go to the Actions tab of the repository, and on the left pane, click on `Destroy`, then on the right, click on `Run Workflow` dropdown, then click on the `Run Workflow` green button. It will take down the infrastructure provisioned by the pipeline.
+
 ![destroy!](assets/destroy.png)
+
 2. Delete the S3 bucket and DynamoDB table created for state locking using the AWS console.
 
 ## Explanation of the workflow
 This is the deploy.yml workflow. It triggers on every commit to the `main` branch of the repository. It sets the needed variables, some from GitHub secrets, and the rest supplied directly. It checks out the code, sets up `node` with version 16 (any other version won't work), and then it builds the code. The built code is stored in the `build` directory which it creates during the build process. The rest of the steps initialize and deploy the workload using terraform.
+
 ```yaml
 name: Deploy S3 Website
 
@@ -179,9 +190,11 @@ jobs:
       - name: Deploy Terraform Code
         run: terraform -chdir=Terraform apply -auto-approve
 ```
+
 ## Explanation of the Terraform code
 The terraform code creates an S3 bucket with all the needed configuration for an S3 website, and once that's done, it uploads the production ready code in the `build` directory into the S3 website so it can serve them across the internet.
 This is the section that deals with uploading the production ready code to S3:
+
 ```yaml
 locals {
   content_types = {
@@ -206,4 +219,5 @@ resource "aws_s3_object" "erply_s3_website" {
   depends_on = [aws_s3_bucket_policy.erply_s3_website]
 }
 ```
+
 The `content_types` local is necessary so the S3 website can correctly decode the object types and serve them in a webpage, instead of as an ordinary file.
