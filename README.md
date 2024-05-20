@@ -195,7 +195,7 @@ jobs:
 The terraform code creates an S3 bucket with all the needed configuration for an S3 website, and once that's done, it uploads the production ready code in the `build` directory into the S3 website so it can serve them across the internet.
 This is the section that deals with uploading the production ready code to S3:
 
-```yaml
+```groovy
 locals {
   content_types = {
     css  = "text/css"
