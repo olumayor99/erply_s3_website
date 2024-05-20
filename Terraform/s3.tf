@@ -69,7 +69,6 @@ resource "aws_s3_object" "erply_s3_website" {
   etag         = filemd5("../Landing-Page-React/build/${each.value}")
   acl          = "public-read"
   content_type = lookup(local.content_types, element(split(".", each.value), length(split(".", each.value)) - 1), "text/plain")
-  # content_encoding = "utf-8"
   depends_on = [aws_s3_bucket_policy.erply_s3_website]
 }
 
