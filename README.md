@@ -221,3 +221,5 @@ resource "aws_s3_object" "erply_s3_website" {
 ```
 
 The `content_types` local is necessary so the S3 website can correctly decode the object types and serve them in a webpage, instead of as an ordinary file.
+
+Enjoy!
