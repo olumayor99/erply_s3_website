@@ -14,8 +14,7 @@ jobs:
   
   
   Deploy_S3_Website:
-    # runs-on: ubuntu-latest
-    runs-on: arc-runner
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
